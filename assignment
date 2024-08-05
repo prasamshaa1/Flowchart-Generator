@@ -1,0 +1,383 @@
+# Constants
+MAX_ATTEMPTS = 3
+ACADEMIC_CREDENTIALS = {"Prasamsha": "abc@123"}
+REGISTERED_LECTURER_CREDENTIALS = {"Christina": "xyz123"}
+EXAM_UNIT_CREDENTIALS = {"personnel": "exam123"}
+LECTURER_FILE = "lecturers.txt"
+PERSONNEL_FILE = "personnels.txt"
+SUBJECTS_FILE = "subjects.txt"
+QUESTIONS_FILE = "questions.txt"
+EXAMS_FILE = "exams.txt"
+
+# Ensure the required files exist
+def ensure_files_exist():
+    for file in [LECTURER_FILE, PERSONNEL_FILE, SUBJECTS_FILE, QUESTIONS_FILE, EXAMS_FILE]:
+        try:
+            with open(file, 'x') as f:  # Create the file if it does not exist
+                pass
+            print(f"Created file: {file}")
+        except FileExistsError:
+            print(f"File already exists: {file}")
+
+# Ensure necessary files are created
+ensure_files_exist()
+
+def main_menu():
+    """Display the main menu options."""
+    print("Welcome to the Test Questions Management System (TQMS)")
+    print("1. Academic Login")
+    print("2. Registered Lecturer Login")
+    print("3. Exam Unit Personnel Login")
+    print("4. Exit")
+    return input("Please choose an option (1-4): ")
+
+def validate_login(username, password, user_type):
+    """Validate login credentials based on user type."""
+    if user_type == 'academic':
+        return ACADEMIC_CREDENTIALS.get(username) == password
+    elif user_type == 'registered_lecturer':
+        return REGISTERED_LECTURER_CREDENTIALS.get(username) == password
+    elif user_type == 'exam_personnel':
+        return EXAM_UNIT_CREDENTIALS.get(username) == password
+    return False
+
+def handle_login(user_type):
+    """Handle user login with limited attempts."""
+    attempts = 0
+    while attempts < MAX_ATTEMPTS:
+        username = input(f"Enter your {user_type} username: ").strip()
+        password = input(f"Enter your {user_type} password: ").strip()
+        if validate_login(username, password, user_type):
+            print(f"Login successful! Welcome, {user_type.replace('_', ' ').capitalize()}!")
+            return username
+        attempts += 1
+        print(f"Invalid credentials. {MAX_ATTEMPTS - attempts} attempts remaining.")
+    print("Maximum attempts reached. Exiting...")
+    return None
+
+def academic_menu():
+    """Display the academic menu options."""
+    print("\nAcademic Menu")
+    print("1. Assign New Lecturer/Exam Personnel")
+    print("2. Add Lecturer Profile")
+    print("3. Modify Lecturer Profile")
+    print("4. Add Subjects and Topics")
+    print("5. Delete Lecturer/Exam Personnel")
+    print("6. Logout")
+    return input("Select an option (1-6): ")
+
+def registered_lecturer_menu():
+    """Display the registered lecturer menu options."""
+    print("\nRegistered Lecturer Menu")
+    print("1. Add New Questions and Answers")
+    print("2. Modify Questions and Answers")
+    print("3. View Questions and Answers")
+    print("4. Change Username and Password")
+    print("5. Logout")
+    return input("Select an option (1-5): ")
+
+def exam_personnel_menu():
+    """Display the exam unit personnel menu options."""
+    print("\nExam Unit Personnel Menu")
+    print("1. Create Exam Papers")
+    print("2. Add Questions to Exam Papers")
+    print("3. Modify Exam Papers")
+    print("4. View Exam Papers")
+    print("5. Change Username and Password")
+    print("6. Logout")
+    return input("Select an option (1-6): ")
+
+def assign_new_user():
+    """Assign a new user (lecturer/exam personnel)."""
+    user_type = input("Enter user type (lecturer/exam_personnel): ").strip().lower()
+    username = input("Enter new username: ").strip()
+    password = input("Enter new password: ").strip()
+    filename = f"{user_type}s.txt"
+    with open(filename, 'a') as file:
+        file.write(f"{username},{password}\n")
+    print(f"New {user_type.replace('_', ' ')} assigned successfully!")
+
+def add_lecturer_profile():
+    """Add a new lecturer profile."""
+    username = input("Enter lecturer username: ").strip()
+    name = input("Enter name: ").strip()
+    address = input("Enter address: ").strip()
+    contact_number = input("Enter contact number: ").strip()
+    dob = input("Enter date of birth (YYYY-MM-DD): ").strip()
+    email = input("Enter email address: ").strip()
+    age = input("Enter age: ").strip()
+    citizenship = input("Enter citizenship: ").strip()
+    lecturer_id = input("Enter lecturer ID: ").strip()
+    with open(LECTURER_FILE, 'a') as file:
+        file.write(f"{username},{name},{address},{contact_number},{dob},{email},{age},{citizenship},{lecturer_id}\n")
+    print("Lecturer profile added successfully!")
+
+def modify_lecturer_profile():
+    """Modify an existing lecturer profile."""
+    username = input("Enter lecturer username to modify: ").strip()
+    found = False
+    try:
+        with open(LECTURER_FILE, 'r') as file:
+            lines = file.readlines()
+        with open(LECTURER_FILE, 'w') as file:
+            for line in lines:
+                if line.startswith(username + ','):
+                    found = True
+                    name = input("Enter new name: ").strip()
+                    address = input("Enter new address: ").strip()
+                    contact_number = input("Enter new contact number: ").strip()
+                    dob = input("Enter new date of birth (YYYY-MM-DD): ").strip()
+                    email = input("Enter new email address: ").strip()
+                    age = input("Enter new age: ").strip()
+                    citizenship = input("Enter new citizenship: ").strip()
+                    lecturer_id = input("Enter new lecturer ID: ").strip()
+                    file.write(f"{username},{name},{address},{contact_number},{dob},{email},{age},{citizenship},{lecturer_id}\n")
+                else:
+                    file.write(line)
+    except FileNotFoundError:
+        print("Lecturer file not found!")
+    if found:
+        print("Lecturer profile updated successfully!")
+    else:
+        print("Lecturer not found!")
+
+def add_subjects_and_topics():
+    """Add new subjects and topics."""
+    subjects = {}
+    for _ in range(3):
+        subject = input("Enter subject name: ").strip()
+        topics = input("Enter three topics for this subject, separated by commas: ").strip().split(',')
+        subjects[subject] = topics
+    with open(SUBJECTS_FILE, 'w') as file:
+        for subject, topics in subjects.items():
+            file.write(f"{subject}:{','.join(topics)}\n")
+    print("Subjects and topics added successfully!")
+
+def delete_user():
+    """Delete a lecturer or exam personnel."""
+    user_type = input("Enter user type (lecturer/exam_personnel): ").strip().lower()
+    username = input("Enter username to delete: ").strip()
+    filename = f"{user_type}s.txt"
+    found = False
+    try:
+        with open(filename, 'r') as file:
+            lines = file.readlines()
+        with open(filename, 'w') as file:
+            for line in lines:
+                if line.startswith(username + ','):
+                    found = True
+                else:
+                    file.write(line)
+    except FileNotFoundError:
+        print(f"{user_type.replace('_', ' ').capitalize()} file not found!")
+    if found:
+        print(f"{user_type.replace('_', ' ').capitalize()} deleted successfully!")
+    else:
+        print(f"{user_type.replace('_', ' ').capitalize()} not found!")
+
+def add_questions():
+    """Add new questions and answers."""
+    username = input("Enter your username: ").strip()
+    subject = input("Enter subject: ").strip()
+    topic = input("Enter topic: ").strip()
+    question = input("Enter question: ").strip()
+    answer = input("Enter answer: ").strip()
+    with open(QUESTIONS_FILE, 'a') as file:
+        file.write(f"{username},{subject},{topic},{question},{answer}\n")
+    print("Question added successfully!")
+
+def modify_questions():
+    """Modify existing questions and answers."""
+    username = input("Enter your username: ").strip()
+    subject = input("Enter subject: ").strip()
+    topic = input("Enter topic: ").strip()
+    question = input("Enter question to modify: ").strip()
+    found = False
+    try:
+        with open(QUESTIONS_FILE, 'r') as file:
+            lines = file.readlines()
+        with open(QUESTIONS_FILE, 'w') as file:
+            for line in lines:
+                stored_username, stored_subject, stored_topic, stored_question, stored_answer = line.strip().split(',', 4)
+                if (stored_username == username and stored_subject == subject and
+                    stored_topic == topic and stored_question == question):
+                    found = True
+                    new_question = input("Enter new question: ").strip()
+                    new_answer = input("Enter new answer: ").strip()
+                    file.write(f"{username},{subject},{topic},{new_question},{new_answer}\n")
+                else:
+                    file.write(line)
+    except FileNotFoundError:
+        print("Questions file not found!")
+    if found:
+        print("Question modified successfully!")
+    else:
+        print("Question not found!")
+
+def view_questions():
+    """View questions and answers for a specific subject and topic."""
+    subject = input("Enter subject: ").strip()
+    topic = input("Enter topic: ").strip()
+    print("\nQuestions and Answers:")
+    try:
+        with open(QUESTIONS_FILE, 'r') as file:
+            for line in file:
+                _, stored_subject, stored_topic, question, answer = line.strip().split(',', 4)
+                if stored_subject == subject and stored_topic == topic:
+                    print(f"Question: {question}")
+                    print(f"Answer: {answer}")
+                    print()
+    except FileNotFoundError:
+        print("Questions file not found!")
+
+def create_exam_papers():
+    """Create a new exam paper with multiple choice and subjective questions."""
+    set_num = input("Enter exam set number (1 or 2): ").strip()
+    mcqs = []
+    subj_qs = []
+    print("Enter 5 multiple choice questions:")
+    for _ in range(5):
+        question = input("Enter MCQ question: ").strip()
+        mcqs.append(question)
+    print("Enter 3 subjective questions:")
+    for _ in range(3):
+        question = input("Enter subjective question: ").strip()
+        subj_qs.append(question)
+    with open(f"exam_set_{set_num}.txt", 'w') as file:
+        file.write("Section A - Multiple Choice Questions\n")
+        for q in mcqs:
+            file.write(f"MCQ: {q}\n")
+        file.write("Section B - Subjective Questions\n")
+        for q in subj_qs:
+            file.write(f"Subjective: {q}\n")
+    print(f"Exam Set {set_num} created successfully!")
+
+def modify_exam_papers():
+    """Modify an existing exam paper."""
+    set_num = input("Enter exam set number (1 or 2) to modify: ").strip()
+    try:
+        with open(f"exam_set_{set_num}.txt", 'r') as file:
+            lines = file.readlines()
+        with open(f"exam_set_{set_num}.txt", 'w') as file:
+            for line in lines:
+                if line.startswith("MCQ: ") or line.startswith("Subjective: "):
+                    print(f"Current Question: {line.strip()}")
+                    new_question = input("Enter new question: ").strip()
+                    file.write(line.split(':')[0] + f": {new_question}\n")
+                else:
+                    file.write(line)
+        print(f"Exam Set {set_num} modified successfully!")
+    except FileNotFoundError:
+        print("Exam Set not found!")
+
+def view_exam_papers():
+    """View an existing exam paper."""
+    set_num = input("Enter exam set number (1 or 2) to view: ").strip()
+    try:
+        with open(f"exam_set_{set_num}.txt", 'r') as file:
+            print(file.read())
+    except FileNotFoundError:
+        print("Exam Set not found!")
+
+def change_credentials(user_type, username):
+    """Change the credentials for a given user type."""
+    filename = f"{user_type}s.txt"
+    new_username = input("Enter new username: ").strip()
+    new_password = input("Enter new password: ").strip()
+    found = False
+    try:
+        with open(filename, 'r') as file:
+            lines = file.readlines()
+        with open(filename, 'w') as file:
+            for line in lines:
+                stored_username, stored_password = line.strip().split(',', 1)
+                if stored_username == username:
+                    found = True
+                    file.write(f"{new_username},{new_password}\n")
+                else:
+                    file.write(line)
+    except FileNotFoundError:
+        print("User file not found!")
+    if found:
+        print("Credentials updated successfully!")
+    else:
+        print("User not found!")
+
+def academic_actions(username):
+    """Perform academic actions."""
+    while True:
+        choice = academic_menu()
+        if choice == '1':
+            assign_new_user()
+        elif choice == '2':
+            add_lecturer_profile()
+        elif choice == '3':
+            modify_lecturer_profile()
+        elif choice == '4':
+            add_subjects_and_topics()
+        elif choice == '5':
+            delete_user()
+        elif choice == '6':
+            print("Logging out...")
+            break
+        else:
+            print("Invalid choice! Please select a valid option.")
+
+def registered_lecturer_actions(username):
+    """Perform registered lecturer actions."""
+    while True:
+        choice = registered_lecturer_menu()
+        if choice == '1':
+            add_questions()
+        elif choice == '2':
+            modify_questions()
+        elif choice == '3':
+            view_questions()
+        elif choice == '4':
+            change_credentials('registered_lecturer', username)
+        elif choice == '5':
+            print("Logging out...")
+            break
+        else:
+            print("Invalid choice! Please select a valid option.")
+
+def exam_personnel_actions(username):
+    """Perform exam unit personnel actions."""
+    while True:
+        choice = exam_personnel_menu()
+        if choice == '1':
+            create_exam_papers()
+        elif choice == '2':
+            add_questions()
+        elif choice == '3':
+            modify_exam_papers()
+        elif choice == '4':
+            view_exam_papers()
+        elif choice == '5':
+            change_credentials('exam_personnel', username)
+        elif choice == '6':
+            print("Logging out...")
+            break
+        else:
+            print("Invalid choice! Please select a valid option.")
+
+if __name__ == "__main__":
+    while True:
+        choice = main_menu()
+        if choice == '1':
+            username = handle_login('academic')
+            if username:
+                academic_actions(username)
+        elif choice == '2':
+            username = handle_login('registered_lecturer')
+            if username:
+                registered_lecturer_actions(username)
+        elif choice == '3':
+            username = handle_login('exam_personnel')
+            if username:
+                exam_personnel_actions(username)
+        elif choice == '4':
+            print("Exiting the system. Goodbye!")
+            break
+        else:
+            print("Invalid choice! Please select a valid option.")
